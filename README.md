@@ -49,7 +49,7 @@ Shortify is a comprehensive URL shortening service that transforms long, unwield
 Shortify/
 ├── src/
 │   ├── main/
-│   │   ├── java/com/urlshortner/urlshortener/
+│   │   ├── java/com/urlshortener/urlshortener/
 │   │   │   ├── controller/         # REST API Controllers
 │   │   │   ├── service/            # Business Logic
 │   │   │   ├── repository/         # Data Access Layer
@@ -224,7 +224,7 @@ curl -X POST "http://localhost:8080/api/shortUrl/shorten?longUrl=https://www.exa
 {
   "status": true,
   "message": "URL shortened successfully",
-  "data": "short.ly/123456789",
+  "data": "http://localhost:8080/abc123",
   "statusCode": 200
 }
 ```
