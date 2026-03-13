@@ -5,11 +5,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.urlshortner.urlshortener.models.CustomizedResponse;
+import com.urlshortner.urlshortener.models.UrlShortenerRequest;
 import com.urlshortner.urlshortener.service.ShortUrlService;
 
 
@@ -22,7 +23,7 @@ public class ShortUrlController {
     @Autowired
     private ShortUrlService shortUrlService;
     @PostMapping("/shorten")
-    public ResponseEntity<CustomizedResponse> shortenUrl(@RequestParam  String longUrl){
+    public ResponseEntity<CustomizedResponse> shortenUrl(@RequestBody UrlShortenerRequest longUrl){
         ResponseEntity<CustomizedResponse> response=null;
         try {
             response = ResponseEntity.ok(shortUrlService.shortenUrl(longUrl));

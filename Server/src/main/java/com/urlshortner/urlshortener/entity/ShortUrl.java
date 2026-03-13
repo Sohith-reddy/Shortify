@@ -5,6 +5,7 @@
     import jakarta.persistence.Column;
     import jakarta.persistence.Entity;
     import jakarta.persistence.FetchType;
+    import jakarta.persistence.ForeignKey;
     import jakarta.persistence.GeneratedValue;
     import jakarta.persistence.GenerationType;
     import jakarta.persistence.Id;
@@ -28,7 +29,7 @@
         @Column
         private LocalDateTime expirationTime;
         @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "user_id")
+        @JoinColumn(name = "user_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_short_urls_user_id"))
         private User user;      
         @Column
         private Integer isActive;
