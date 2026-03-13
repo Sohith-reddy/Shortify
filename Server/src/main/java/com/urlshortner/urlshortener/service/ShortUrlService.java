@@ -17,13 +17,10 @@ public class ShortUrlService {
     public CustomizedResponse shortenUrl(UrlShortenerRequest longUrl) {
 
         try {
-
-            
             // Write the logic here
             ShortUrl shortUrl=new ShortUrl();
             shortUrl.setOriginalUrl(longUrl.getLongUrl());
-
-
+            
             // ShortUrl entity = new ShortUrl();
             // entity.setOriginalUrl(longUrl);
             // entity.setShortUrl(shortUrl);
