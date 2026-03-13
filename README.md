@@ -4,7 +4,7 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A production-ready, end-to-end URL shortening service built with Spring Boot, designed for scalability, performance, and reliability.
+A production-ready, end-to-end URL shortening service built with Spring Boot and Angular, designed for scalability, performance, and reliability.
 
 ## 🎯 Overview
 
