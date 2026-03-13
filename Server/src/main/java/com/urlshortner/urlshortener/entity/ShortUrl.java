@@ -15,17 +15,45 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "short_urls", indexes = {
-    @Index(name = "idx_short_urls_short_code", columnList = "short_code"),
-    @Index(name = "idx_short_urls_user_id", columnList = "user_id")
-})
+@Table(name = "short_urls",
+       indexes = {
+           @Index(name = "idx_short_code", columnList = "short_code"),
+           @Index(name = "idx_user_id", columnList = "user_id")
+       })
 public class ShortUrl {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(name = "short_code", unique = true, nullable = false)
     private String shortCode;
+
+    @Column(name = "original_url", nullable = false)
+    private String originalUrl;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "expiration_time")
+    private LocalDateTime expirationTime;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+        name = "user_id",
+        foreignKey = @ForeignKey(name = "fk_short_urls_user_id")
+    )
+    private User user;
+
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
+    @Column(name = "click_count")
+    private Long clickCount = 0L;
+
+    public Long getId() {
+        return id;
+    }
 
     public String getShortCode() {
         return shortCode;
@@ -33,28 +61,6 @@ public class ShortUrl {
 
     public void setShortCode(String shortCode) {
         this.shortCode = shortCode;
-    }
-
-    @Column(nullable = false)
-    private String originalUrl;
-    @Column
-    private LocalDateTime createdAt;
-    @Column
-    private LocalDateTime expirationTime;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_short_urls_user_id"))
-    private User user;
-    @Column
-    private Integer isActive;
-    @Column
-    private Long clickCount;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getOriginalUrl() {
@@ -89,11 +95,11 @@ public class ShortUrl {
         this.user = user;
     }
 
-    public Integer getIsActive() {
+    public Boolean getIsActive() {
         return isActive;
     }
 
-    public void setIsActive(Integer isActive) {
+    public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
     }
 
