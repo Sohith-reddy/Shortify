@@ -23,10 +23,13 @@ public class ShortUrlController {
     @Autowired
     private ShortUrlService shortUrlService;
     @PostMapping("/shorten")
-    public ResponseEntity<CustomizedResponse> shortenUrl(@RequestBody UrlShortenerRequest longUrl){
+    public ResponseEntity<CustomizedResponse> shortenUrl(@RequestBody UrlShortenerRequest request){
         ResponseEntity<CustomizedResponse> response=null;
         try {
-            response = ResponseEntity.ok(shortUrlService.shortenUrl(longUrl));
+            if(request.getLongUrl() == null || request.getLongUrl().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(new CustomizedResponse("Invalid URL", null));
+            }
+            response = ResponseEntity.ok(shortUrlService.shortenUrl(request));
         } catch (Exception e) {
             response=ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CustomizedResponse("Error shortening URL: " + e.getMessage(),null));
         }
