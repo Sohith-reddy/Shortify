@@ -50,15 +50,15 @@ Shortify follows a modern, decoupled architecture with a clear separation betwee
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Frontend Framework** | Angular 12.2 | Single-page application with reactive forms and routing |
+| **Frontend Framework** | Angular 21 | Single-page application with reactive forms and routing |
 | **Frontend Language** | TypeScript 4.3 | Type-safe development with modern JavaScript features |
 | **Styling** | SCSS | Component-scoped and global styling with variables |
 | **State Management** | RxJS 6.6 | Reactive state management using observables |
 | **HTTP Client** | Angular HttpClient | RESTful API communication with interceptors |
-| **Backend Framework** | Spring Boot 4.0.3 | RESTful API server with dependency injection |
-| **Java Version** | 17 (LTS) | Long-term support Java runtime |
+| **Backend Framework** | Spring Boot 4.5.5 | RESTful API server with dependency injection |
+| **Java Version** | 21 (LTS) | Long-term support Java runtime |
 | **ORM** | JPA/Hibernate | Object-relational mapping for database operations |
-| **Database** | MySQL / PostgreSQL | Relational database for persistent storage |
+| **Database** | MySQL | Relational database for persistent storage |
 | **Connection Pool** | HikariCP | High-performance JDBC connection pooling |
 | **Build Tool - Backend** | Maven 3.x | Dependency management and build automation |
 | **Build Tool - Frontend** | Angular CLI | Development server, build, and deployment tooling |
