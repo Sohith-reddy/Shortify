@@ -1,12 +1,9 @@
 package com.urlshortner.urlshortener.entity;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.urlshortner.urlshortener.enums.Roles;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,7 +12,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -49,10 +45,6 @@ public class User {
 
     @Column(name="is_premium")
     private Integer isPremium;
-
-    @JsonIgnore
-    @OneToMany(mappedBy="user",cascade=CascadeType.ALL,orphanRemoval=true)
-    private List<ShortUrl> shortUrls;
 
     public Long getUserId() {
         return userId;
@@ -126,12 +118,4 @@ public class User {
         this.isPremium = isPremium;
     }
 
-    public List<ShortUrl> getShortUrls() {
-        return shortUrls;
-    }
-
-    public void setShortUrls(List<ShortUrl> shortUrls) {
-        this.shortUrls = shortUrls;
-    }
-    
 }
