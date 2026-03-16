@@ -6,7 +6,7 @@ public class UrlShortenerRequest {
     private String longUrl;
     private LocalDateTime expirationTime;
     private String customAlias;
-    private Integer isActive;
+    private Boolean isActive;
     private Long userId;
     public String getLongUrl() {
         return longUrl;
@@ -32,10 +32,10 @@ public class UrlShortenerRequest {
     public void setCustomAlias(String customAlias) {
         this.customAlias = customAlias;
     }
-    public Integer getIsActive() {
+    public Boolean getIsActive() {
         return isActive;
     }
-    public void setIsActive(Integer isActive) {
+    public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
     }
 }

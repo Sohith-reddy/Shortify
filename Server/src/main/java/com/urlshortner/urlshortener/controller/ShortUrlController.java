@@ -1,17 +1,23 @@
 package com.urlshortner.urlshortener.controller;
 
+import java.net.URI;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.urlshortner.urlshortener.entity.ShortUrl;
 import com.urlshortner.urlshortener.models.CustomizedResponse;
 import com.urlshortner.urlshortener.models.UrlShortenerRequest;
 import com.urlshortner.urlshortener.service.ShortUrlService;
+
 
 
 
@@ -35,5 +41,34 @@ public class ShortUrlController {
         }
         return response;
     }
-    
+
+    @GetMapping("/{shortCode}")
+    public ResponseEntity<Void> redirect(@PathVariable String shortCode) {
+
+        try {
+
+            ShortUrl url = shortUrlService.resolveShortUrl(shortCode);
+
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .location(URI.create(url.getOriginalUrl()))
+                    .build();
+
+        } catch (RuntimeException e) {
+
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            if (e.getMessage().contains("inactive")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            if (e.getMessage().contains("expired")) {
+                return ResponseEntity.status(HttpStatus.GONE).build();
+            }
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }

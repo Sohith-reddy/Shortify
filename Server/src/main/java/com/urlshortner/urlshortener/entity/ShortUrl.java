@@ -38,12 +38,23 @@ public class ShortUrl {
     @Column(name = "expiration_time")
     private LocalDateTime expirationTime;
 
+    
+    @Column(name = "short_url", nullable = false, unique = true)
+    private String shortUrl;
+    public String getShortUrl() {
+        return shortUrl;
+    }
+
+    public void setShortUrl(String shortUrl) {
+        this.shortUrl = shortUrl;
+    }
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Roles role;
 
     @Column(name = "is_active")
-    private Boolean isActive = true;
+    private Boolean isActive;
 
     @Column(name = "click_count")
     private Long clickCount = 0L;

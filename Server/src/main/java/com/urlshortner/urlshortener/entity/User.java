@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name="users",indexes={
     @Index(name="idx_user_email", columnList="email"),
-    @Index(name="idx_user_username", columnList="username")
+    @Index(name="idx_user_username", columnList="userName")
 })
 public class User {
     @Id
