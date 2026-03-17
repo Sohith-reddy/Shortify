@@ -18,4 +18,8 @@ public interface ShortUrlRepository extends JpaRepository<ShortUrl, Long> {
 
     List<ShortUrl> findByRole(Roles role);
 
+    Optional<ShortUrl> findByShortUrlAndRole(String shortUrl, Roles role);
+
+    Optional<ShortUrl> findByShortUrl(String shortUrl);
+
 }

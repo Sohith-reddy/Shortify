@@ -21,6 +21,7 @@ import com.urlshortner.urlshortener.service.ShortUrlService;
 
 
 
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping(path = "/api/shortUrl")
@@ -70,5 +71,14 @@ public class ShortUrlController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    @GetMapping(path = "/analytics/{shortCode}")
+    public ResponseEntity<CustomizedResponse> getAnalytics(@PathVariable String shortCode) {
+        try {
+            return ResponseEntity.ok(shortUrlService.getAnalytics(shortCode));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CustomizedResponse("Error fetching analytics: " + e.getMessage(), null));
+        }
+    }
+    
 
 }

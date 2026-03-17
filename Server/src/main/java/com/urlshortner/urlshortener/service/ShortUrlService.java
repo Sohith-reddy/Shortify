@@ -155,24 +155,35 @@ public class ShortUrlService {
         return trimmedBaseUrl + "/" + shortCode;
     }
     public ShortUrl resolveShortUrl(String shortCode) {
-
-    ShortUrl url = shortUrlRepository.findByShortCode(shortCode)
-            .orElseThrow(() -> new RuntimeException("Short URL not found"));
-
-    if (!url.getIsActive()) {
-        throw new RuntimeException("Short URL is inactive");
+        ShortUrl url = shortUrlRepository.findByShortCode(shortCode)
+                .orElseThrow(() -> new RuntimeException("Short URL not found"));
+        if (!url.getIsActive()) {
+            throw new RuntimeException("Short URL is inactive");
+        }
+        if (url.getExpirationTime() != null
+                && url.getExpirationTime().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Short URL has expired");
+        }
+        url.setClickCount(url.getClickCount() + 1);
+        shortUrlRepository.save(url);
+        return url;
     }
+    public CustomizedResponse getAnalytics(String shortCode) {
+        try {
+            ShortUrl url = shortUrlRepository.findByShortCode(shortCode)
+                    .orElseThrow(() -> new RuntimeException("Short URL not found"));
 
-    if (url.getExpirationTime() != null &&
-        url.getExpirationTime().isBefore(LocalDateTime.now())) {
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("shortUrl", url.getShortUrl());
+            data.put("originalUrl", url.getOriginalUrl());
+            data.put("createdAt", url.getCreatedAt());
+            data.put("expirationTime", url.getExpirationTime());
+            data.put("isActive", url.getIsActive());
+            data.put("clickCount", url.getClickCount());
 
-        throw new RuntimeException("Short URL has expired");
+            return new CustomizedResponse(true, "Analytics fetched successfully", 200, data);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching analytics: " + e.getMessage());
+        }
     }
-
-    // increment click count
-    url.setClickCount(url.getClickCount() + 1);
-    shortUrlRepository.save(url);
-
-    return url;
-}
 }
