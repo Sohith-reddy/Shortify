@@ -8,11 +8,14 @@
 	max-width: 1180px;
 	margin: 0 auto;
 	min-height: 72px;
-	padding: 0 1.25rem;
+	padding: 0 10.5rem;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 1rem;
+    z-index: 1000;
+    position: sticky;
+    top: 0;
 }
 
 .brand {
