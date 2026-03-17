@@ -1,0 +1,18 @@
+<header class="navbar">
+  <div class="navbar-container">
+    <a class="brand" routerLink="/" aria-label="Go to home">
+      SHORTLY
+    </a>
+
+    <nav class="menu" aria-label="Primary">
+      @for (link of navLinks; track link.label) {
+      <a class="menu-link" [routerLink]="link.href">{{ link.label }}</a>
+      }
+    </nav>
+
+    <div class="auth-actions">
+      <a class="login-link" routerLink="/">Log In</a>
+      <a class="signup-btn" routerLink="/">Sign Up</a>
+    </div>
+  </div>
+</header>
