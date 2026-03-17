@@ -1,6 +1,6 @@
 # Shortify - Production-Ready URL Shortening Service
 
-[![Java Version](https://img.shields.io/badge/Java-21-blue.svg)](https://www.oracle.com/java/)
+[![Java Version](https://img.shields.io/badge/Java-17-blue.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.5.5-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Angular](https://img.shields.io/badge/Angular-21-red.svg)](https://angular.io/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
