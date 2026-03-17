@@ -29,7 +29,7 @@
               "src/styles.css"
             ],
             "server": "src/main.server.ts",
-            "outputMode": "dist/my-app",
+            "outputMode": "server",
             "security": {
               "allowedHosts": []
             },

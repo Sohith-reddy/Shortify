@@ -1,5 +1,4 @@
 {
-  "outputMode": "static",
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ]
