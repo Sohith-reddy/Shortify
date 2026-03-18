@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -179,11 +180,31 @@ public class ShortUrlService {
             data.put("createdAt", url.getCreatedAt());
             data.put("expirationTime", url.getExpirationTime());
             data.put("isActive", url.getIsActive());
+            data.put("role", url.getRole());
+            data.put("userId", url.getUser() != null ? url.getUser().getUserId() : null);
             data.put("clickCount", url.getClickCount());
 
             return new CustomizedResponse(true, "Analytics fetched successfully", 200, data);
         } catch (Exception e) {
             throw new RuntimeException("Error fetching analytics: " + e.getMessage());
+        }
+    }
+    public CustomizedResponse getAllShortUrls(Long userId) {
+        try {
+            if(userId != null) {
+                List<ShortUrl> filteredUrls = shortUrlRepository.findByUser_UserId(userId);
+                Map<String, Object> data = new LinkedHashMap<>();
+                data.put("shortUrls", filteredUrls);
+                return new CustomizedResponse(true, "Filtered short URLs fetched successfully", 200, data);
+            }
+            List<ShortUrl> urls = shortUrlRepository.findAll();
+
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("shortUrls", urls);
+
+            return new CustomizedResponse(true, "All short URLs fetched successfully", 200, data);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching all short URLs: " + e.getMessage());
         }
     }
 }

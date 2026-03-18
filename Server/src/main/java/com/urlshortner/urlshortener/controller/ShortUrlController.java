@@ -11,12 +11,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.urlshortner.urlshortener.entity.ShortUrl;
 import com.urlshortner.urlshortener.models.CustomizedResponse;
 import com.urlshortner.urlshortener.models.UrlShortenerRequest;
 import com.urlshortner.urlshortener.service.ShortUrlService;
+
 
 
 
@@ -77,6 +79,14 @@ public class ShortUrlController {
             return ResponseEntity.ok(shortUrlService.getAnalytics(shortCode));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CustomizedResponse("Error fetching analytics: " + e.getMessage(), null));
+        }
+    }
+    @GetMapping(path="/all")
+    public ResponseEntity<CustomizedResponse> getAllShortUrls(@RequestParam(required=false) Long userId) {
+        try {
+            return ResponseEntity.ok(shortUrlService.getAllShortUrls(userId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CustomizedResponse("Error fetching all short URLs: " + e.getMessage(), null));
         }
     }
     
