@@ -48,9 +48,7 @@ public class ShortUrlController {
 
     @GetMapping("/{shortCode}")
     public ResponseEntity<Void> redirect(@PathVariable String shortCode) {
-
         try {
-
             ShortUrl url = shortUrlService.resolveShortUrl(shortCode);
 
             return ResponseEntity.status(HttpStatus.FOUND)
@@ -58,7 +56,7 @@ public class ShortUrlController {
                     .build();
 
         } catch (RuntimeException e) {
-
+            e.printStackTrace();
             if (e.getMessage().contains("not found")) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }

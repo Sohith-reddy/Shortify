@@ -24,7 +24,7 @@ import com.urlshortner.urlshortener.repository.UserRepository;
 public class ShortUrlService {
 
     private static final String BASE62 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final int CODE_LEN = 7;
+    private static final int CODE_LEN = 6;
     private static final Random RANDOM = new Random();
 
     @Autowired
@@ -33,18 +33,18 @@ public class ShortUrlService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private RedisService redisService;
+
     @Value("${app.base-url:https://short.ly}")
     private String appBaseUrl;
 
     public CustomizedResponse shortenUrl(UrlShortenerRequest request) {
-
         try {
             if (request == null || request.getLongUrl() == null || request.getLongUrl().trim().isEmpty()) {
                 return new CustomizedResponse(false, "Long URL is required", 400, null);
             }
-
             String normalizedUrl = request.getLongUrl().trim();
-
             if (!isValidHttpUrl(normalizedUrl)) {
                 return new CustomizedResponse(false, "Invalid URL format. Use http:// or https://", 400, null);
             }
@@ -166,6 +166,30 @@ public class ShortUrlService {
     }
 
     public ShortUrl resolveShortUrl(String shortCode) {
+        String key = "shorten:url:" + shortCode;
+        Object value = redisService.get(key);
+        if(value!=null){
+            Map<String, Object> cacheMap = (Map<String, Object>) value;
+            Boolean isActive = (Boolean) cacheMap.get("isActive");
+            if(isActive==null || !isActive){
+                throw new RuntimeException("Short URL is inactive");
+            }
+            if(cacheMap.equals("NULL")){
+                throw new RuntimeException("Short URL not found");
+            }
+            Object expObj = cacheMap.get("expirationTime");
+            if (expObj != null) {
+                LocalDateTime expirationTime = convertToLocalDateTime(expObj);
+
+                if (expirationTime.isBefore(LocalDateTime.now())) {
+                    throw new RuntimeException("Short URL has expired");
+                }
+            }
+            redisService.increment("shortUrl:click:" + shortCode);
+            ShortUrl url = new ShortUrl();
+            url.setOriginalUrl((String) cacheMap.get("originalUrl"));
+            return url;
+        }
         ShortUrl url = shortUrlRepository.findByShortCode(shortCode)
                 .orElseThrow(() -> new RuntimeException("Short URL not found"));
         if (!url.getIsActive()) {
@@ -177,6 +201,14 @@ public class ShortUrlService {
         }
         url.setClickCount(url.getClickCount() + 1);
         shortUrlRepository.save(url);
+        Map<String, Object> cacheMap = new LinkedHashMap<>();
+        cacheMap.put("originalUrl", url.getOriginalUrl());
+        cacheMap.put("clickCount", url.getClickCount());
+        cacheMap.put("isActive", url.getIsActive());
+        cacheMap.put("expirationTime", url.getExpirationTime());
+        redisService.set(key, cacheMap, 3600);
+
+        redisService.increment("shortUrl:click:" + shortCode);
         return url;
     }
 
@@ -218,5 +250,22 @@ public class ShortUrlService {
         } catch (Exception e) {
             throw new RuntimeException("Error fetching all short URLs: " + e.getMessage());
         }
+    }
+    private LocalDateTime convertToLocalDateTime(Object obj) {
+
+        if (obj instanceof List<?>) {
+            List<?> list = (List<?>) obj;
+
+            return LocalDateTime.of(
+                    (Integer) list.get(0),
+                    (Integer) list.get(1),
+                    (Integer) list.get(2),
+                    (Integer) list.get(3),
+                    (Integer) list.get(4),
+                    (Integer) list.get(5)
+            );
+        }
+
+        return null;
     }
 }
