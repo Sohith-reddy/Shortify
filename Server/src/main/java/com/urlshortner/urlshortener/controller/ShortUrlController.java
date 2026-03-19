@@ -42,6 +42,7 @@ public class ShortUrlController {
         } catch (Exception e) {
             response=ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CustomizedResponse("Error shortening URL: " + e.getMessage(),null));
         }
+        response = ResponseEntity.status(response.getStatusCode()).body(response.getBody());
         return response;
     }
 

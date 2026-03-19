@@ -95,6 +95,7 @@ public class ShortUrlService {
             shortUrl.setOriginalUrl(normalizedUrl);
             shortUrl.setShortCode(shortCode);
             shortUrl.setUser(user);
+            shortUrl.setShortUrl(buildShortUrl(shortCode));
             shortUrl.setCreatedAt(LocalDateTime.now());
             shortUrl.setClickCount(0L);
             shortUrl.setIsActive(true);
