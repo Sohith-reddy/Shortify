@@ -7,6 +7,7 @@ import { DialogModule } from 'primeng/dialog';
 import { DatePickerModule } from 'primeng/datepicker';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 interface UrlData {
   id: string;
@@ -27,6 +28,8 @@ export class Dashboard implements OnInit {
   editDialogVisible: boolean = false;
   selectedUrl: UrlData | null = null;
   tempExpirationDate: Date | null = null;
+
+  constructor(private router: Router){}
 
   ngOnInit() {
     this.urls = [
@@ -51,5 +54,8 @@ export class Dashboard implements OnInit {
 
   toggleStatus(url: UrlData) {
     console.log(`URL ${url.shortUrl} active status changed to ${url.active}`);
+  }
+  redirectToCreateLink(){
+    this.router.navigate(['/']);
   }
 }

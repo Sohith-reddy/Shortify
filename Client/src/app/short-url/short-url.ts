@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 })
 export class ShortUrl implements OnInit {
   shortUrlForm!: FormGroup;
+  shortUrl="short.ly/";
 
   constructor(private fb: FormBuilder) {}
 
