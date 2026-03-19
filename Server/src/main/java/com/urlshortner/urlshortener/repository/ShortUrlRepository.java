@@ -6,8 +6,8 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.urlshortner.urlshortener.entity.ShortUrl;
-import com.urlshortner.urlshortener.enums.Roles;
 import com.urlshortner.urlshortener.entity.User;
+import com.urlshortner.urlshortener.enums.Roles;
 
 public interface ShortUrlRepository extends JpaRepository<ShortUrl, Long> {
 
@@ -24,6 +24,12 @@ public interface ShortUrlRepository extends JpaRepository<ShortUrl, Long> {
     Optional<ShortUrl> findByShortUrl(String shortUrl);
 
     List<ShortUrl> findByUser(User user);
+
     List<ShortUrl> findByUser_UserId(Long userId);
+
+    Optional<ShortUrl> findByOriginalUrlAndUserUserIdAndIsActiveTrue(
+            String originalUrl,
+            Long userId
+    );
 
 }

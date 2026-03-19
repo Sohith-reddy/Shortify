@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,87 +37,94 @@ public class ShortUrlService {
     private String appBaseUrl;
 
     public CustomizedResponse shortenUrl(UrlShortenerRequest request) {
-    try {
 
-        if (request == null || request.getLongUrl() == null || request.getLongUrl().trim().isEmpty()) {
-            return new CustomizedResponse(false, "Long URL is required", 400, null);
-        }
-
-        String normalizedUrl = request.getLongUrl().trim();
-
-        if (!isValidHttpUrl(normalizedUrl)) {
-            return new CustomizedResponse(false, "Invalid URL format. Use http:// or https://", 400, null);
-        }
-
-        String shortCode;
-        String alias = request.getCustomAlias();
-
-        if (alias != null && !alias.trim().isEmpty()) {
-
-            shortCode = alias.trim();
-
-            if (!shortCode.matches("^[a-zA-Z0-9_-]{4,10}$")) {
-                return new CustomizedResponse(false,
-                        "Custom alias must be 4-10 chars: letters, numbers, _ or -",
-                        400,
-                        null);
+        try {
+            if (request == null || request.getLongUrl() == null || request.getLongUrl().trim().isEmpty()) {
+                return new CustomizedResponse(false, "Long URL is required", 400, null);
             }
 
-            if (shortUrlRepository.existsByShortCode(shortCode)) {
-                return new CustomizedResponse(false, "Custom alias already taken", 409, null);
+            String normalizedUrl = request.getLongUrl().trim();
+
+            if (!isValidHttpUrl(normalizedUrl)) {
+                return new CustomizedResponse(false, "Invalid URL format. Use http:// or https://", 400, null);
+            }
+            User user = null;
+            if (request.getUserId() != null) {
+                user = userRepository.findById(request.getUserId()).orElse(null);
+                if (user == null) {
+                    return new CustomizedResponse(false, "User not found", 404, null);
+                }
+            }
+            if (user != null) {
+                Optional<ShortUrl> existing = shortUrlRepository
+                        .findByOriginalUrlAndUserUserIdAndIsActiveTrue(normalizedUrl, user.getUserId());
+
+                if (existing.isPresent()) {
+                    ShortUrl url = existing.get();
+
+                    Map<String, Object> data = new LinkedHashMap<>();
+                    data.put("id", url.getId());
+                    data.put("shortCode", url.getShortCode());
+                    data.put("shortUrl", buildShortUrl(url.getShortCode()));
+                    data.put("originalUrl", url.getOriginalUrl());
+
+                    return new CustomizedResponse(true, "URL already shortened", 200, data);
+                }
+            }
+            String shortCode;
+            String alias = request.getCustomAlias();
+
+            if (alias != null && !alias.trim().isEmpty()) {
+
+                shortCode = alias.trim();
+                if (!shortCode.matches("^[a-zA-Z0-9_-]{4,10}$")) {
+                    return new CustomizedResponse(false,
+                            "Custom alias must be 4-10 chars: letters, numbers, _ or -",
+                            400,
+                            null);
+                }
+                if (shortUrlRepository.existsByShortCode(shortCode)) {
+                    return new CustomizedResponse(false, "Custom alias already taken", 409, null);
+                }
+
+            } else {
+                shortCode = generateUniqueShortCode();
             }
 
-        } else {
-            shortCode = generateUniqueShortCode();
-        }
-
-        String shortUrlString = buildShortUrl(shortCode);
-        ShortUrl shortUrl = new ShortUrl();
-        shortUrl.setOriginalUrl(normalizedUrl);
-        shortUrl.setShortCode(shortCode);
-        shortUrl.setShortUrl(shortUrlString);   
-
-        if (request.getExpirationTime() != null) {
-            shortUrl.setExpirationTime(request.getExpirationTime());
-        }
-
-        if (request.getIsActive() != null) {
-            shortUrl.setIsActive(request.getIsActive());
-        }
-        if (request.getUserId() != null) {
-
-            User user = userRepository.findById(request.getUserId()).orElse(null);
-
-            if (user == null) {
-                return new CustomizedResponse(false, "User not found", 404, null);
+            ShortUrl shortUrl = new ShortUrl();
+            shortUrl.setOriginalUrl(normalizedUrl);
+            shortUrl.setShortCode(shortCode);
+            shortUrl.setUser(user);
+            shortUrl.setCreatedAt(LocalDateTime.now());
+            shortUrl.setClickCount(0L);
+            shortUrl.setIsActive(true);
+            if (request.getExpirationTime() != null) {
+                shortUrl.setExpirationTime(request.getExpirationTime());
+            } else {
+                shortUrl.setExpirationTime(null);
             }
+            ShortUrl saved = shortUrlRepository.save(shortUrl);
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("id", saved.getId());
+            data.put("shortCode", saved.getShortCode());
+            data.put("shortUrl", buildShortUrl(saved.getShortCode()));
+            data.put("originalUrl", saved.getOriginalUrl());
+            data.put("createdAt", saved.getCreatedAt());
+            data.put("expirationTime", saved.getExpirationTime());
+            data.put("isActive", saved.getIsActive());
+            data.put("userId", saved.getUser() != null ? saved.getUser().getUserId() : null);
 
-            shortUrl.setRole(user.getRole());
+            return new CustomizedResponse(true, "URL shortened successfully", 200, data);
+
+        } catch (Exception e) {
+
+            return new CustomizedResponse(false,
+                    "Error shortening URL: " + e.getMessage(),
+                    500,
+                    null);
         }
-
-        ShortUrl saved = shortUrlRepository.save(shortUrl);
-
-        Map<String, Object> data = new LinkedHashMap<>();
-
-        data.put("id", saved.getId());
-        data.put("shortCode", saved.getShortCode());
-        data.put("shortUrl", saved.getShortUrl());
-        data.put("originalUrl", saved.getOriginalUrl());
-        data.put("createdAt", saved.getCreatedAt());
-        data.put("expirationTime", saved.getExpirationTime());
-        data.put("isActive", saved.getIsActive());
-        data.put("role", saved.getRole());
-
-        return new CustomizedResponse(true, "URL shortened successfully", 200, data);
-
-    } catch (Exception e) {
-
-        return new CustomizedResponse(false,
-                "Error shortening URL: " + e.getMessage(),
-                500,
-                null);
     }
-}
+
     private String generateUniqueShortCode() {
         String code;
         int attempts = 0;
@@ -155,6 +163,7 @@ public class ShortUrlService {
         }
         return trimmedBaseUrl + "/" + shortCode;
     }
+
     public ShortUrl resolveShortUrl(String shortCode) {
         ShortUrl url = shortUrlRepository.findByShortCode(shortCode)
                 .orElseThrow(() -> new RuntimeException("Short URL not found"));
@@ -169,6 +178,7 @@ public class ShortUrlService {
         shortUrlRepository.save(url);
         return url;
     }
+
     public CustomizedResponse getAnalytics(String shortCode) {
         try {
             ShortUrl url = shortUrlRepository.findByShortCode(shortCode)
@@ -189,9 +199,10 @@ public class ShortUrlService {
             throw new RuntimeException("Error fetching analytics: " + e.getMessage());
         }
     }
+
     public CustomizedResponse getAllShortUrls(Long userId) {
         try {
-            if(userId != null) {
+            if (userId != null) {
                 List<ShortUrl> filteredUrls = shortUrlRepository.findByUser_UserId(userId);
                 Map<String, Object> data = new LinkedHashMap<>();
                 data.put("shortUrls", filteredUrls);
