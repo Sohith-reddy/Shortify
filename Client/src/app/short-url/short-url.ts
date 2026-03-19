@@ -1,23 +1,37 @@
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
+import { DatePickerModule } from 'primeng/datepicker';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-short-url',
-  imports: [],
+  imports: [ReactiveFormsModule, InputTextModule, ButtonModule, DatePickerModule, CommonModule],
   templateUrl: './short-url.html',
   styleUrl: './short-url.css',
 })
-export class ShortUrl {
-  shortUrlForm!:FormGroup;
-  constructor(private fb:FormBuilder){
+export class ShortUrl implements OnInit {
+  shortUrlForm!: FormGroup;
+
+  constructor(private fb: FormBuilder) {}
+
+  ngOnInit(): void {
     this.shortUrlForm = this.fb.group({
-      originalUrl:['',Validators.compose([Validators.required,Validators.pattern('https?://.+')])],
-      customAlias:['',Validators.pattern('^[a-zA-Z0-9_-]+$')],
-      expirationTime:[new Date(),Validators.pattern('^\\d+(s|m|h|d)$')]
+      originalUrl: ['', [Validators.required, Validators.pattern('^https?://.+')]],
+      customAlias: ['', [Validators.pattern('^[a-zA-Z0-9_-]+$')]],
+      expirationDate: [null] // Use actual Date object for Calendar
     });
   }
-  ngOnInit(): void {
 
+  onSubmit() {
+    if (this.shortUrlForm.valid) {
+      console.log('Short URL form submitted:', this.shortUrlForm.value);
+      // Implement service call later
+    } else {
+      Object.keys(this.shortUrlForm.controls).forEach(key => {
+        this.shortUrlForm.get(key)?.markAsDirty();
+      });
+    }
   }
-  
 }
