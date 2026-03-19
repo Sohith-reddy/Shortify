@@ -9,6 +9,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ import com.urlshortner.urlshortener.service.RedisService;
 import com.urlshortner.urlshortener.service.ShortUrlService;
 
 @RestController
+@CrossOrigin(origins = "*",maxAge=3600)
 public class RedirectController {
 
     @Autowired
@@ -31,7 +33,6 @@ public class RedirectController {
         String key = "shorten:url:" + shortCode;
 
         try {
-            // 1️⃣ Try Redis first
             Object cachedObj = redisService.get(key);
 
             if (cachedObj != null) {
@@ -42,8 +43,6 @@ public class RedirectController {
                 if (isActive == null || !isActive) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
                 }
-
-                // 🔥 Expiration check
                 Object expObj = cached.get("expirationTime");
                 if (expObj != null) {
                     LocalDateTime expirationTime = convertToLocalDateTime(expObj);
@@ -52,8 +51,6 @@ public class RedirectController {
                         return ResponseEntity.status(HttpStatus.GONE).build();
                     }
                 }
-
-                // 🔥 Click count (Redis)
                 redisService.increment("short:click:" + shortCode);
 
                 String originalUrl = (String) cached.get("originalUrl");
@@ -63,13 +60,12 @@ public class RedirectController {
                         .build();
             }
 
-            // 2️⃣ Cache MISS → call service
             ShortUrl url = shortUrlService.resolveShortUrl(shortCode);
 
-            // 3️⃣ Store in Redis
             Map<String, Object> value = new HashMap<>();
             value.put("originalUrl", url.getOriginalUrl());
             value.put("isActive", url.getIsActive());
+            value.put("clickCount", url.getClickCount());
             value.put("expirationTime", url.getExpirationTime());
 
             redisService.set(key, value, 600);
@@ -100,8 +96,7 @@ public class RedirectController {
 
     private LocalDateTime convertToLocalDateTime(Object obj) {
 
-        if (obj instanceof List<?>) {
-            List<?> list = (List<?>) obj;
+        if (obj instanceof List<?> list) {
 
             return LocalDateTime.of(
                     (Integer) list.get(0),
