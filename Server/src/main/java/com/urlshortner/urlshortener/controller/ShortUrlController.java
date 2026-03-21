@@ -20,10 +20,6 @@ import com.urlshortner.urlshortener.models.UrlShortenerRequest;
 import com.urlshortner.urlshortener.service.ShortUrlService;
 
 
-
-
-
-
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping(path = "/api/shortUrl")
