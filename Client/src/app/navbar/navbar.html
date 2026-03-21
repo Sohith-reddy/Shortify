@@ -1,29 +1,44 @@
-<header class="bg-surface-0 dark:bg-surface-900 border-b border-surface-200 dark:border-surface-700 shadow-sm sticky top-0 z-50">
-  <div class="px-6 py-3 flex items-center justify-between">
-    <!-- Logo -->
-    <a class="flex items-center gap-2 text-primary-500 font-bold text-2xl no-underline" routerLink="/" aria-label="Go to home">
-      <i class="pi pi-link text-2xl"></i>
-      <span>Shortly</span>
+<header class="navbar-shell" [class.navbar-shell-scrolled]="isScrolled()">
+  <div class="navbar-strip"></div>
+
+  <div class="navbar-inner">
+    <a class="brand" routerLink="/" aria-label="Go to home">
+      <span class="brand-mark" aria-hidden="true"><i class="pi pi-link"></i></span>
+      <span class="brand-text">Shortify</span>
     </a>
 
-    <!-- Navigation Links -->
-    <nav class="hidden md:flex gap-6 items-center" aria-label="Primary">
+    <nav class="nav-links" aria-label="Primary">
       @for (link of navLinks; track link.label) {
-        <a class="text-surface-600 dark:text-surface-200 hover:text-primary-500 transition-colors duration-200 font-medium no-underline" 
-           [routerLink]="link.href">{{ link.label }}</a>
+        <a class="nav-link" [routerLink]="link.href">{{ link.label }}</a>
       }
     </nav>
 
-    <!-- Profile Action -->
-    <div class="flex items-center gap-4">
-      <p-button icon="pi pi-bell" [rounded]="true" [text]="true" severity="secondary" />
-      
-      <!-- Profile Menu Trigger -->
-      <div class="cursor-pointer" (click)="menu.toggle($event)">
+    <div class="actions">
+      <button
+        pButton
+        type="button"
+        [icon]="themeIcon()"
+        [rounded]="true"
+        [text]="true"
+        severity="secondary"
+        (click)="toggleTheme()"
+        [attr.aria-label]="themeLabel()"
+      ></button>
+
+      <button
+        pButton
+        type="button"
+        icon="pi pi-bell"
+        [rounded]="true"
+        [text]="true"
+        severity="secondary"
+        aria-label="Notifications"
+      ></button>
+
+      <button class="avatar-trigger" type="button" (click)="menu.toggle($event)" aria-label="Open profile menu">
         <p-avatar image="https://primefaces.org/cdn/primeng/images/avatar/amyelsner.png" shape="circle" size="normal" />
-      </div>
-      
-      <!-- PrimeNG Menu -->
+      </button>
+
       <p-menu #menu [model]="profileItems" [popup]="true" />
     </div>
   </div>
