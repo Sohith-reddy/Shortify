@@ -37,7 +37,7 @@
             <span class="text-surface-400 font-normal">(optional)</span></label>
           <div class="p-inputgroup">
             <span
-              class="p-inputgroup-addon bg-surface-100 dark:bg-surface-800 text-surface-500 text-sm border-r-0">{{shortUrl}}</span>
+              class="p-inputgroup-addon bg-surface-100 dark:bg-surface-800 text-surface-500 text-sm border-r-0">{{shortUrlService}}</span>
             <input pInputText id="customAlias" formControlName="customAlias" placeholder="my-custom-link" />
           </div>
           @if(shortUrlForm.get('customAlias')?.invalid && shortUrlForm.get('customAlias')?.dirty) {

@@ -19,7 +19,8 @@ import { MessageService } from 'primeng/api';
 })
 export class ShortUrl implements OnInit {
   shortUrlForm!: FormGroup;
-  shortUrl="LOCALHOST:8080/";
+  shortUrlService="LOCALHOST:8080/";
+  shortUrl:any;
 
   showSuccessModal:boolean = false;
 
