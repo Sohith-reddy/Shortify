@@ -147,7 +147,7 @@ Shortify/
 
 ## 🎨 Angular Frontend Architecture
 
-The Shortify frontend is built with Angular 12, providing a modern, responsive, and user-friendly interface for URL management.
+The Shortify frontend is built with Angular 21, providing a modern, responsive, and user-friendly interface for URL management.
 
 ### Core Modules & Features
 
