@@ -20,12 +20,15 @@ import com.urlshortner.urlshortener.models.UrlShortenerRequest;
 import com.urlshortner.urlshortener.repository.ShortUrlRepository;
 import com.urlshortner.urlshortener.repository.UserRepository;
 
+
 @Service
 public class ShortUrlService {
 
     private static final String BASE62 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int CODE_LEN = 6;
     private static final Random RANDOM = new Random();
+    @Value("${app.base-url:http://localhost:8080}")
+    private String appBaseUrl;
 
     @Autowired
     private ShortUrlRepository shortUrlRepository;
@@ -35,10 +38,6 @@ public class ShortUrlService {
 
     @Autowired
     private RedisService redisService;
-
-    @Value("${app.base-url:https://short.ly}")
-    private String appBaseUrl;
-
     public CustomizedResponse shortenUrl(UrlShortenerRequest request) {
         try {
             if (request == null || request.getLongUrl() == null || request.getLongUrl().trim().isEmpty()) {
@@ -77,9 +76,9 @@ public class ShortUrlService {
             if (alias != null && !alias.trim().isEmpty()) {
 
                 shortCode = alias.trim();
-                if (!shortCode.matches("^[a-zA-Z0-9_-]{4,10}$")) {
+                if (!shortCode.matches("^[a-zA-Z0-9_-]{4,15}$")) {
                     return new CustomizedResponse(false,
-                            "Custom alias must be 4-10 chars: letters, numbers, _ or -",
+                            "Custom alias must be 4-15 chars: letters, numbers, _ or -",
                             400,
                             null);
                 }
@@ -160,9 +159,9 @@ public class ShortUrlService {
     private String buildShortUrl(String shortCode) {
         String trimmedBaseUrl = appBaseUrl != null ? appBaseUrl.trim() : "";
         if (trimmedBaseUrl.endsWith("/")) {
-            return trimmedBaseUrl + shortCode;
+            return trimmedBaseUrl + "r/" + shortCode;
         }
-        return trimmedBaseUrl + "/" + shortCode;
+        return trimmedBaseUrl + "/r/" + shortCode;
     }
 
     public ShortUrl resolveShortUrl(String shortCode) {

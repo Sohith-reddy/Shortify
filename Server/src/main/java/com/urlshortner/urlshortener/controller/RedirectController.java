@@ -27,10 +27,11 @@ public class RedirectController {
     @Autowired
     private RedisService redisService;
 
-    @GetMapping("/{shortCode}")
+    @GetMapping("/r/{shortCode}")
     public ResponseEntity<Void> redirect(@PathVariable String shortCode) {
 
         String key = "shorten:url:" + shortCode;
+        System.out.println("Redirect request for code: " + shortCode);
 
         try {
             Object cachedObj = redisService.get(key);

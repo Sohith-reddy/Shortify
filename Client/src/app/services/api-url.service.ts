@@ -1,5 +1,5 @@
 export const ENDPOINTS = {
   SHORT_URL:{
-    CREATE:'/api/shorteUrl/shorten',
+    CREATE:'/api/shortUrl/shorten',
   }
 }
