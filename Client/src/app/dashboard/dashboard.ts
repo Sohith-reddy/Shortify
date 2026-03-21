@@ -8,6 +8,8 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { DashboardService } from '../services/dashboard-service/dashboard-service';
+import { response } from 'express';
 
 interface UrlData {
   id: string;
@@ -29,14 +31,19 @@ export class Dashboard implements OnInit {
   selectedUrl: UrlData | null = null;
   tempExpirationDate: Date | null = null;
 
-  constructor(private router: Router){}
+  constructor(private router: Router,private service:DashboardService){}
 
   ngOnInit() {
-    this.urls = [
-      { id: '1', originalUrl: 'https://github.com/Sohith-reddy', shortUrl: 'short.ly/sohith-github', clicked: 124, expirationDate: new Date(2026, 11, 31), active: true },
-      { id: '2', originalUrl: 'https://angular.dev/guide/components', shortUrl: 'short.ly/ng-docs', clicked: 52, expirationDate: null, active: true },
-      { id: '3', originalUrl: 'https://primeng.org/table', shortUrl: 'short.ly/prime-table', clicked: 8, expirationDate: new Date(2024, 5, 20), active: false },
-    ];
+    this.getUrls();
+  }
+
+  getUrls(){
+    this.service.getUrls(1).subscribe((response:any)=>{
+      this.urls=response.data?.shortUrls;
+    },(err:any)=>{
+      console.error('Error fetching URLs:', err);
+    })
+
   }
 
   showEditDialog(url: UrlData) {
