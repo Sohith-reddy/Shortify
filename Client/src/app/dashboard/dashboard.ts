@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -9,10 +9,11 @@ import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DashboardService } from '../services/dashboard-service/dashboard-service';
-import { response } from 'express';
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 interface UrlData {
-  id: string;
+  id: number;
   originalUrl: string;
   shortUrl: string;
   clicked: number;
@@ -20,30 +21,64 @@ interface UrlData {
   active: boolean;
 }
 
+interface DashboardApiUrl {
+  id: number;
+  originalUrl: string;
+  shortUrl?: string;
+  shortCode?: string;
+  clickCount?: number;
+  clicked?: number;
+  expirationTime?: string | null;
+  expirationDate?: string | null;
+  isActive?: boolean;
+  active?: boolean;
+}
+
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, TableModule, ButtonModule, ToggleSwitchModule, DialogModule, DatePickerModule, FormsModule, TooltipModule],
-  templateUrl: './dashboard.html'
+  standalone: true,
+  imports: [
+    CommonModule,
+    TableModule,
+    ButtonModule,
+    ToggleSwitchModule,
+    DialogModule,
+    DatePickerModule,
+    FormsModule,
+    TooltipModule,
+  ],
+  templateUrl: './dashboard.html',
+  styleUrl: './dashboard.css',
 })
-export class Dashboard implements OnInit {
-  urls: UrlData[] = [];
+export class Dashboard {
+  urls$: Observable<UrlData[]>;
+
   editDialogVisible: boolean = false;
   selectedUrl: UrlData | null = null;
   tempExpirationDate: Date | null = null;
 
-  constructor(private router: Router,private service:DashboardService){}
+  constructor(
+    private router: Router,
+    private service: DashboardService,
+  ) {
+    this.urls$ = this.service.getUrls(1).pipe(
+      map((response: any) => {
+        const shortUrls = response?.data?.shortUrls ?? [];
 
-  ngOnInit() {
-    this.getUrls();
-  }
-
-  getUrls(){
-    this.service.getUrls(1).subscribe((response:any)=>{
-      this.urls=response.data?.shortUrls;
-    },(err:any)=>{
-      console.error('Error fetching URLs:', err);
-    })
-
+        return shortUrls.map((item: DashboardApiUrl) => ({
+          id: item.id,
+          originalUrl: item.originalUrl,
+          shortUrl: item.shortUrl ?? item.shortCode ?? '',
+          clicked: item.clickCount ?? item.clicked ?? 0,
+          expirationDate: item.expirationTime
+            ? new Date(item.expirationTime)
+            : item.expirationDate
+              ? new Date(item.expirationDate)
+              : null,
+          active: item.isActive ?? item.active ?? true,
+        }));
+      }),
+    );
   }
 
   showEditDialog(url: UrlData) {
@@ -59,10 +94,16 @@ export class Dashboard implements OnInit {
     this.editDialogVisible = false;
   }
 
-  toggleStatus(url: UrlData) {
-    console.log(`URL ${url.shortUrl} active status changed to ${url.active}`);
+  toggleStatus(url: UrlData, value: boolean) {
+    url.active = value;
+    console.log(`URL ${url.shortUrl} active status changed to ${value}`);
   }
-  redirectToCreateLink(){
+
+  redirectToCreateLink() {
     this.router.navigate(['/']);
+  }
+
+  copyUrl(url: string) {
+    navigator.clipboard.writeText(url);
   }
 }
