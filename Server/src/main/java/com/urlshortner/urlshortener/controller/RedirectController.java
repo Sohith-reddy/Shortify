@@ -76,7 +76,7 @@ public class RedirectController {
                     .build();
 
         } catch (RuntimeException e) {
-
+            e.printStackTrace();
             String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
 
             if (msg.contains("not found")) {
