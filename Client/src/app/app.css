@@ -1,0 +1,30 @@
+:host {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
+.app-main {
+	flex: 1;
+}
+
+.app-footer {
+	border-top: 1px solid var(--separator);
+	padding: 1.75rem 1.25rem;
+	margin-top: 3rem;
+}
+
+.app-footer-inner {
+	max-width: 1180px;
+	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	font-size: 0.82rem;
+	color: var(--text-tertiary);
+}
+
+.app-footer-dot {
+	opacity: 0.6;
+}

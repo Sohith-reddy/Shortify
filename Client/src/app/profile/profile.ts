@@ -1,46 +1,71 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
+import { RouterLink } from '@angular/router';
+import { ThemeService, ThemeMode } from '../services/theme-service/theme-service';
+import { UiService } from '../services/ui-service/ui-service';
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, ReactiveFormsModule, InputTextModule, ButtonModule, AvatarModule],
-  templateUrl: './profile.html'
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, InputTextModule, ButtonModule, AvatarModule, RouterLink],
+  templateUrl: './profile.html',
+  styleUrl: './profile.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Profile implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly ui = inject(UiService);
+  readonly theme = inject(ThemeService);
+
   profileForm!: FormGroup;
-  isEditing: boolean = false;
+  readonly isEditing = signal(false);
 
-  constructor(private fb: FormBuilder) {}
+  readonly initials = computed(() => {
+    const first = this.profileForm?.get('firstName')?.value ?? '';
+    const last = this.profileForm?.get('lastName')?.value ?? '';
+    return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase() || 'U';
+  });
 
-  ngOnInit() {
+  readonly themeOptions: { label: string; value: ThemeMode; icon: string }[] = [
+    { label: 'Light', value: 'light', icon: 'pi pi-sun' },
+    { label: 'Dark', value: 'dark', icon: 'pi pi-moon' },
+    { label: 'Auto', value: 'system', icon: 'pi pi-desktop' },
+  ];
+
+  ngOnInit(): void {
     this.profileForm = this.fb.group({
       firstName: [{ value: 'Amy', disabled: true }, Validators.required],
       lastName: [{ value: 'Elsner', disabled: true }, Validators.required],
       email: [{ value: 'amy.elsner@example.com', disabled: true }, [Validators.required, Validators.email]],
-      company: [{ value: 'PrimeFaces', disabled: true }]
+      company: [{ value: 'PrimeFaces', disabled: true }],
     });
   }
 
-  toggleEdit() {
-    this.isEditing = !this.isEditing;
-    if (this.isEditing) {
+  toggleEdit(): void {
+    this.isEditing.update((editing) => !editing);
+
+    if (this.isEditing()) {
       this.profileForm.enable();
     } else {
-      // Typically, here we'd check if the form is valid, then save context to backend.
-      // E.g., if (!this.profileForm.valid) { return; }
       this.profileForm.disable();
     }
   }
 
-  saveProfile() {
+  saveProfile(): void {
     if (this.profileForm.valid) {
-      console.log('Profile saved:', this.profileForm.value);
-      this.isEditing = false;
+      this.isEditing.set(false);
       this.profileForm.disable();
+      this.ui.success('Your profile has been updated.', 'Saved');
+    } else {
+      this.profileForm.markAllAsTouched();
     }
+  }
+
+  setTheme(mode: ThemeMode): void {
+    this.theme.set(mode);
   }
 }

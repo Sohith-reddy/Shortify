@@ -1,164 +1,265 @@
-<div class="min-h-[calc(100vh-80px)] bg-surface-50 dark:bg-surface-950 p-6 md:p-12">
-  <div class="max-w-7xl mx-auto">
-
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-surface-900 dark:text-surface-0 m-0">Dashboard</h1>
-        <p class="text-surface-500 dark:text-surface-400 mt-2">
-          Manage your branded links and track analytics.
-        </p>
-      </div>
-      <p-button label="Create Link" icon="pi pi-plus" (click)="redirectToCreateLink()" />
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1 class="page-title">Your links</h1>
+      <p class="page-sub">Every short link you've created, with live click counts.</p>
     </div>
 
-    <!-- Table -->
-    <div class="bg-surface-0 dark:bg-surface-900 shadow rounded-xl border border-surface-200 dark:border-surface-800 p-1 md:p-4">
+    <div class="page-head-actions">
+      <p-button
+        icon="pi pi-refresh"
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        pTooltip="Refresh"
+        tooltipPosition="bottom"
+        [disabled]="loading()"
+        (onClick)="refresh()"
+      />
+      <p-button
+        label="Export CSV"
+        icon="pi pi-download"
+        [outlined]="true"
+        (onClick)="exportCsv()"
+      />
+      <p-button label="New link" icon="pi pi-plus" (onClick)="createLink()" />
+    </div>
+  </header>
 
-      <p-table 
-        [value]="(urls$ | async) || []" 
-        [paginator]="true" 
-        [rows]="10" 
-        responsiveLayout="scroll"
-        styleClass="p-datatable-sm md:p-datatable-lg"
+  <section class="stats" aria-label="Summary">
+    <article class="stat surface-card">
+      <span class="stat-label">Total links</span>
+      <strong class="stat-value">{{ stats().total }}</strong>
+    </article>
+
+    <article class="stat surface-card">
+      <span class="stat-label">Total clicks</span>
+      <strong class="stat-value">{{ stats().totalClicks | number }}</strong>
+    </article>
+
+    <article class="stat surface-card">
+      <span class="stat-label">Active</span>
+      <strong class="stat-value">{{ stats().active }}</strong>
+    </article>
+
+    <article class="stat surface-card">
+      <span class="stat-label">Avg. clicks</span>
+      <strong class="stat-value">{{ stats().avgClicks }}</strong>
+    </article>
+  </section>
+
+  <!-- ---------- Filter bar ---------- -->
+  <section class="toolbar surface-card">
+    <div class="search">
+      <i class="pi pi-search search-icon" aria-hidden="true"></i>
+      <input
+        pInputText
+        type="search"
+        class="search-input"
+        placeholder="Search by destination or code"
+        aria-label="Search links"
+        [value]="query()"
+        (input)="onQueryInput($event)"
+      />
+    </div>
+
+    <div class="toolbar-selects">
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="status()"
+        (ngModelChange)="status.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        styleClass="toolbar-select"
+        [appendTo]="'body'"
+      />
+
+      <p-select
+        [options]="sortOptions"
+        [ngModel]="sort()"
+        (ngModelChange)="sort.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        styleClass="toolbar-select"
+        [appendTo]="'body'"
+      />
+
+      @if (hasFilters()) {
+        <p-button
+          label="Clear"
+          icon="pi pi-times"
+          [text]="true"
+          severity="secondary"
+          (onClick)="clearFilters()"
+        />
+      }
+    </div>
+  </section>
+
+  <!-- ---------- States ---------- -->
+  @if (loading()) {
+    <div class="placeholder surface-card">
+      <i class="pi pi-spin pi-spinner placeholder-icon"></i>
+      <p class="placeholder-title">Loading your links…</p>
+    </div>
+  } @else if (loadFailed()) {
+    <div class="placeholder surface-card">
+      <i class="pi pi-exclamation-triangle placeholder-icon placeholder-icon-warn"></i>
+      <p class="placeholder-title">We couldn't reach the server</p>
+      <!-- <p class="placeholder-copy">
+        Make sure the Spring Boot API is running, then try again.
+      </p> -->
+      <p-button label="Retry" icon="pi pi-refresh" [outlined]="true" (onClick)="refresh()" />
+    </div>
+  } @else if (!links().length) {
+    <div class="placeholder surface-card">
+      <i class="pi pi-link placeholder-icon"></i>
+      <p class="placeholder-title">No links yet</p>
+      <p class="placeholder-copy">Shorten your first URL and it'll show up here.</p>
+      <p-button label="Create a link" icon="pi pi-plus" (onClick)="createLink()" />
+    </div>
+  } @else if (!visibleLinks().length) {
+    <div class="placeholder surface-card">
+      <i class="pi pi-filter-slash placeholder-icon"></i>
+      <p class="placeholder-title">Nothing matches those filters</p>
+      <p class="placeholder-copy">Try a different search term or status.</p>
+      <p-button label="Clear filters" [outlined]="true" (onClick)="clearFilters()" />
+    </div>
+  } @else {
+    <!-- ---------- Table ---------- -->
+    <section class="table-card surface-card">
+      <p-table
+        [value]="visibleLinks()"
+        [paginator]="visibleLinks().length > 10"
+        [rows]="10"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        [rowTrackBy]="trackById"
+        currentPageReportTemplate="{first}–{last} of {totalRecords}"
+        [showCurrentPageReport]="true"
       >
-
-        <!-- Header -->
         <ng-template pTemplate="header">
           <tr>
-            <th>Original URL</th>
-            <th>Short URL</th>
-            <th>Clicks</th>
-            <th>Expiration</th>
-            <th>Status</th>
-            <th class="text-right">Actions</th>
+            <th class="col-dest">Destination</th>
+            <th class="col-short">Short link</th>
+            <th class="col-clicks">Clicks</th>
+            <th class="col-status">Status</th>
+            <th class="col-expiry">Expires</th>
+            <th class="col-actions"><span class="sr-only">Actions</span></th>
           </tr>
         </ng-template>
 
-        <!-- Body -->
-        <ng-template pTemplate="body" let-url>
+        <ng-template pTemplate="body" let-link>
           <tr>
-
-            <!-- Original URL -->
-            <td class="max-w-[200px] truncate text-surface-700 dark:text-surface-200" [title]="url.originalUrl">
-              <a 
-                [href]="url.originalUrl" 
-                target="_blank"
-                class="hover:text-primary-500 no-underline"
-              >
-                {{ url.originalUrl }}
-              </a>
-            </td>
-
-            <!-- Short URL (FIXED) -->
-            <td>
-              <a 
-                [href]="url.shortUrl" 
-                target="_blank"
-                class="text-primary-500 font-medium hover:underline"
-              >
-                {{ url.shortUrl }}
-              </a>
-            </td>
-
-            <!-- Clicks -->
-            <td>
-              <div class="flex items-center gap-2">
-                <i class="pi pi-chart-line text-surface-400"></i>
-                <span class="font-semibold">{{ url.clicked }}</span>
+            <!-- Destination -->
+            <td class="col-dest">
+              <div class="dest">
+                <img
+                  class="dest-favicon"
+                  [src]="faviconFor(link.domain)"
+                  [alt]="''"
+                  aria-hidden="true"
+                  loading="lazy"
+                  width="16"
+                  height="16"
+                />
+                <div class="dest-text">
+                  <a
+                    class="dest-domain"
+                    [href]="link.originalUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    [pTooltip]="link.originalUrl"
+                    tooltipPosition="top"
+                  >
+                    {{ link.domain }}
+                  </a>
+                  <span class="dest-path">{{ link.originalUrl }}</span>
+                </div>
               </div>
             </td>
 
-            <!-- Expiration -->
-            <td>
-              <span *ngIf="url.expirationDate; else neverTpl"
-                class="text-sm text-surface-600 dark:text-surface-300">
-                {{ url.expirationDate | date:'mediumDate' }}
-              </span>
-
-              <ng-template #neverTpl>
-                <span class="text-sm text-surface-400 italic">Never</span>
-              </ng-template>
+            <!-- Short link -->
+            <td class="col-short">
+              <button
+                type="button"
+                class="short-chip mono"
+                (click)="copy(link)"
+                pTooltip="Copy to clipboard"
+                tooltipPosition="top"
+              >
+                <span class="short-code">/{{ link.shortCode }}</span>
+                <i class="pi pi-copy"></i>
+              </button>
             </td>
 
-            <!-- Status (FIXED) -->
-            <td>
-              <p-toggleswitch 
-                [ngModel]="url.active"
-                (ngModelChange)="toggleStatus(url, $event)"
-              />
+            <!-- Clicks -->
+            <td class="col-clicks">
+              <span class="clicks">{{ link.clicks | number }}</span>
+            </td>
+
+            <!-- Status -->
+            <td class="col-status">
+              <span class="pill" [class]="'pill-' + link.status">
+                <span class="pill-dot" aria-hidden="true"></span>
+                {{ statusLabel(link.status) }}
+              </span>
+            </td>
+
+            <!-- Expiry -->
+            <td class="col-expiry">
+              @if (link.expirationDate) {
+                <span class="expiry">{{ link.expirationDate | date: 'mediumDate' }}</span>
+              } @else {
+                <span class="expiry expiry-never">Never</span>
+              }
             </td>
 
             <!-- Actions -->
-            <td class="text-right">
-              <p-button 
-                icon="pi pi-calendar-plus" 
-                [text]="true" 
-                [rounded]="true" 
-                severity="secondary"
-                (onClick)="showEditDialog(url)" 
-                pTooltip="Edit Expiration" 
-              />
-
-              <p-button 
-                icon="pi pi-copy" 
-                [text]="true" 
-                [rounded]="true" 
-                severity="secondary"
-                pTooltip="Copy"
-                (onClick)="copyUrl(url.shortUrl)"
-              />
+            <td class="col-actions">
+              <div class="row-actions">
+                <p-button
+                  icon="pi pi-qrcode"
+                  [text]="true"
+                  [rounded]="true"
+                  severity="secondary"
+                  pTooltip="QR code"
+                  tooltipPosition="top"
+                  (onClick)="openQr(link)"
+                />
+                <p-button
+                  icon="pi pi-chart-line"
+                  [text]="true"
+                  [rounded]="true"
+                  severity="secondary"
+                  pTooltip="Details"
+                  tooltipPosition="top"
+                  (onClick)="viewDetail(link)"
+                />
+                <a
+                  class="row-open"
+                  [href]="link.shortUrl"
+                  target="_blank"
+                  rel="noopener"
+                  pTooltip="Open link"
+                  tooltipPosition="top"
+                  aria-label="Open short link"
+                >
+                  <i class="pi pi-external-link"></i>
+                </a>
+              </div>
             </td>
-
           </tr>
         </ng-template>
-
-        <!-- Empty -->
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="6" class="text-center p-8 text-surface-500">
-              No short links found.
-              <a routerLink="/" class="text-primary-500 hover:underline">
-                Create your first one!
-              </a>
-            </td>
-          </tr>
-        </ng-template>
-
       </p-table>
+    </section>
 
-    </div>
-  </div>
+    <p class="table-note">
+      Showing {{ visibleLinks().length }} of {{ links().length }} links.
+      <a routerLink="/bulk">Shorten several at once →</a>
+    </p>
+  }
 </div>
 
-<!-- Dialog -->
-<p-dialog 
-  header="Edit Expiration Date" 
-  [modal]="true" 
-  [(visible)]="editDialogVisible" 
-  [style]="{ width: '25rem' }"
->
-
-  <span class="block mb-5">
-    Update expiration for:
-    <strong>{{ selectedUrl?.shortUrl }}</strong>
-  </span>
-
-  <div class="flex flex-col gap-2 mb-6">
-    <label for="newExpDate" class="font-semibold">Expiration</label>
-
-    <p-datepicker 
-      [(ngModel)]="tempExpirationDate" 
-      inputId="newExpDate" 
-      [showIcon]="true"
-      appendTo="body" 
-      class="w-full" 
-    />
-  </div>
-
-  <div class="flex justify-end gap-2">
-    <p-button label="Cancel" severity="secondary" (onClick)="editDialogVisible = false" />
-    <p-button label="Save" (onClick)="saveExpiration()" />
-  </div>
-
-</p-dialog>
+@if (qrTarget(); as target) {
+  <app-qr-dialog [(visible)]="qrVisible" [url]="target.shortUrl" [caption]="target.shortUrl" />
+}

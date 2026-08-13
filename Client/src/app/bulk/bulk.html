@@ -1,0 +1,141 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1 class="page-title">Bulk shorten</h1>
+      <p class="page-sub">
+        Paste up to {{ maxUrls }} URLs — one per line — and shorten them in a single pass.
+      </p>
+    </div>
+    <a class="back-link" routerLink="/dashboard">
+      <i class="pi pi-arrow-left"></i> Back to links
+    </a>
+  </header>
+
+  <section class="composer surface-card">
+    <label for="bulkInput" class="field-label">URLs</label>
+
+    <textarea
+      pTextarea
+      id="bulkInput"
+      class="bulk-input"
+      rows="9"
+      spellcheck="false"
+      placeholder="https://example.com/first-article&#10;https://example.com/second-article&#10;https://example.com/third-article"
+      [value]="raw()"
+      (input)="onInput($event)"
+      [disabled]="running()"
+    ></textarea>
+
+    <div class="composer-foot">
+      <div class="counts">
+        <span class="count count-ok">
+          <i class="pi pi-check-circle"></i> {{ validCount() }} valid
+        </span>
+        @if (invalidCount() > 0) {
+          <span class="count count-bad">
+            <i class="pi pi-times-circle"></i> {{ invalidCount() }} skipped
+          </span>
+        }
+        @if (overLimit()) {
+          <span class="count count-bad">
+            <i class="pi pi-exclamation-circle"></i> Over the {{ maxUrls }}-link limit
+          </span>
+        }
+      </div>
+
+      <div class="composer-actions">
+        @if (rows().length) {
+          <p-button
+            label="Reset"
+            [text]="true"
+            severity="secondary"
+            [disabled]="running()"
+            (onClick)="reset()"
+          />
+        }
+        <p-button
+          [label]="running() ? 'Shortening…' : 'Shorten all'"
+          [icon]="running() ? 'pi pi-spin pi-spinner' : 'pi pi-bolt'"
+          [disabled]="!canRun()"
+          (onClick)="run()"
+        />
+      </div>
+    </div>
+
+    <p class="composer-hint">
+      Lines that aren't full http:// or https:// addresses are ignored.
+    </p>
+  </section>
+
+  @if (rows().length) {
+    <section class="results surface-card">
+      <div class="results-head">
+        <h2 class="results-title">Results</h2>
+        <div class="results-actions">
+          <p-button
+            label="Copy all"
+            icon="pi pi-copy"
+            [text]="true"
+            size="small"
+            [disabled]="!succeeded().length"
+            (onClick)="copyAll()"
+          />
+          <p-button
+            label="Export CSV"
+            icon="pi pi-download"
+            [outlined]="true"
+            size="small"
+            [disabled]="!succeeded().length"
+            (onClick)="exportCsv()"
+          />
+        </div>
+      </div>
+
+      <ul class="result-list">
+        @for (row of rows(); track row.input) {
+          <li class="result-row" [class]="'result-row-' + row.state">
+            <span class="result-state" aria-hidden="true">
+              @switch (row.state) {
+                @case ('done') {
+                  <i class="pi pi-check"></i>
+                }
+                @case ('failed') {
+                  <i class="pi pi-times"></i>
+                }
+                @case ('working') {
+                  <i class="pi pi-spin pi-spinner"></i>
+                }
+                @default {
+                  <i class="pi pi-minus"></i>
+                }
+              }
+            </span>
+
+            <div class="result-body">
+              <span class="result-input">{{ row.input }}</span>
+
+              @if (row.shortUrl) {
+                <a class="result-short mono" [href]="row.shortUrl" target="_blank" rel="noopener">
+                  {{ row.shortUrl }}
+                </a>
+              } @else if (row.message) {
+                <span class="result-message">{{ row.message }}</span>
+              }
+            </div>
+
+            @if (row.shortUrl) {
+              <button
+                type="button"
+                class="result-copy"
+                (click)="copyRow(row)"
+                aria-label="Copy short link"
+              >
+                <i class="pi pi-copy"></i>
+              </button>
+            }
+          </li>
+        }
+      </ul>
+    </section>
+  }
+</div>

@@ -1,0 +1,49 @@
+.qr-body {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	text-align: center;
+}
+
+.qr-frame {
+	padding: 1rem;
+	border-radius: var(--radius-lg);
+	background: #fff;
+	box-shadow: var(--shadow-sm);
+	border: 1px solid var(--separator);
+	line-height: 0;
+}
+
+.qr-frame ::ng-deep svg {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-width: 240px;
+}
+
+.qr-caption {
+	margin: 0;
+	font-size: 0.85rem;
+	color: var(--text-secondary);
+	word-break: break-all;
+}
+
+.qr-hint {
+	margin: 0;
+	font-size: 0.82rem;
+	color: var(--text-tertiary);
+}
+
+.qr-error {
+	margin: 0;
+	color: var(--red);
+	font-size: 0.9rem;
+}
+
+.qr-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	width: 100%;
+}

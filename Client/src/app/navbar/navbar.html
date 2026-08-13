@@ -1,45 +1,75 @@
-<header class="navbar-shell" [class.navbar-shell-scrolled]="isScrolled()">
-  <div class="navbar-strip"></div>
-
-  <div class="navbar-inner">
-    <a class="brand" routerLink="/" aria-label="Go to home">
-      <span class="brand-mark" aria-hidden="true"><i class="pi pi-link"></i></span>
+<header class="nav" [class.nav-scrolled]="isScrolled()">
+  <div class="nav-inner">
+    <a class="brand" routerLink="/" aria-label="Shortify home">
+      <span class="brand-mark" aria-hidden="true">
+        <i class="pi pi-link"></i>
+      </span>
       <span class="brand-text">Shortify</span>
     </a>
 
     <nav class="nav-links" aria-label="Primary">
-      @for (link of navLinks; track link.label) {
-        <a class="nav-link" [routerLink]="link.href">{{ link.label }}</a>
+      @for (link of navLinks; track link.href) {
+        <a
+          class="nav-link"
+          [routerLink]="link.href"
+          routerLinkActive="nav-link-active"
+          [routerLinkActiveOptions]="{ exact: link.href === '/' }"
+        >
+          {{ link.label }}
+        </a>
       }
     </nav>
 
-    <div class="actions">
+    <div class="nav-actions">
       <button
-        pButton
         type="button"
-        [icon]="themeIcon()"
-        [rounded]="true"
-        [text]="true"
-        severity="secondary"
-        (click)="toggleTheme()"
-        [attr.aria-label]="themeLabel()"
-      ></button>
-
-      <button
-        pButton
-        type="button"
-        icon="pi pi-bell"
-        [rounded]="true"
-        [text]="true"
-        severity="secondary"
-        aria-label="Notifications"
-      ></button>
-
-      <button class="avatar-trigger" type="button" (click)="menu.toggle($event)" aria-label="Open profile menu">
-        <p-avatar image="https://primefaces.org/cdn/primeng/images/avatar/amyelsner.png" shape="circle" size="normal" />
+        class="icon-button"
+        (click)="theme.toggle()"
+        [attr.aria-label]="theme.label()"
+      >
+        <i [class]="theme.icon()"></i>
       </button>
 
-      <p-menu #menu [model]="profileItems" [popup]="true" />
+      <button
+        type="button"
+        class="avatar-button"
+        (click)="menu.toggle($event)"
+        aria-label="Open account menu"
+      >
+        <p-avatar label="S" shape="circle" size="normal" />
+      </button>
+
+      <p-menu #menu [model]="profileItems" [popup]="true" [appendTo]="'body'" />
+
+      <button
+        type="button"
+        class="icon-button nav-burger"
+        (click)="toggleMobile()"
+        [attr.aria-expanded]="mobileOpen()"
+        aria-label="Toggle navigation menu"
+      >
+        <i [class]="mobileOpen() ? 'pi pi-times' : 'pi pi-bars'"></i>
+      </button>
     </div>
   </div>
+
+  @if (mobileOpen()) {
+    <nav class="nav-mobile" aria-label="Mobile">
+      @for (link of navLinks; track link.href) {
+        <a
+          class="nav-mobile-link"
+          [routerLink]="link.href"
+          routerLinkActive="nav-mobile-link-active"
+          [routerLinkActiveOptions]="{ exact: link.href === '/' }"
+        >
+          <i [class]="link.icon"></i>
+          <span>{{ link.label }}</span>
+        </a>
+      }
+      <a class="nav-mobile-link" routerLink="/profile" routerLinkActive="nav-mobile-link-active">
+        <i class="pi pi-user"></i>
+        <span>Profile</span>
+      </a>
+    </nav>
+  }
 </header>

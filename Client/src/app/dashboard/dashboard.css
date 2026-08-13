@@ -1,6 +1,372 @@
-/* Add your dashboard-specific styles here */
+.page {
+	max-width: 1180px;
+	margin: 0 auto;
+	padding: clamp(1.75rem, 5vw, 3rem) 1.25rem 2rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
 
-.dashboard-container {
-  /* Example: */
-  /* background: #f9f9f9; */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* ---------- Header ---------- */
+.page-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.page-title {
+	font-size: clamp(1.75rem, 4vw, 2.4rem);
+	font-weight: 700;
+	letter-spacing: -0.03em;
+}
+
+.page-sub {
+	margin: 0.4rem 0 0;
+	color: var(--text-secondary);
+	font-size: 0.95rem;
+}
+
+.page-head-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+/* ---------- Stats ---------- */
+.stats {
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: repeat(2, 1fr);
+}
+
+.stat {
+	padding: 1rem 1.15rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+
+.stat-label {
+	font-size: 0.78rem;
+	font-weight: 500;
+	color: var(--text-tertiary);
+	letter-spacing: 0.01em;
+}
+
+.stat-value {
+	font-size: clamp(1.5rem, 3.5vw, 2rem);
+	font-weight: 600;
+	letter-spacing: -0.03em;
+	font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Toolbar ---------- */
+.toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.75rem;
+}
+
+.search {
+	position: relative;
+	flex: 1 1 240px;
+	min-width: 0;
+}
+
+.search-icon {
+	position: absolute;
+	left: 0.85rem;
+	top: 50%;
+	transform: translateY(-50%);
+	color: var(--text-tertiary);
+	font-size: 0.85rem;
+	pointer-events: none;
+}
+
+.search-input {
+	width: 100%;
+	padding-left: 2.35rem !important;
+	background: var(--bg-sunken) !important;
+	border-color: transparent !important;
+}
+
+.search-input:focus {
+	background: var(--bg-elevated) !important;
+}
+
+/* Hide the native clear affordance; it fights the custom styling. */
+.search-input::-webkit-search-cancel-button {
+	appearance: none;
+}
+
+.toolbar-selects {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+::ng-deep .toolbar-select {
+	min-width: 10.5rem;
+}
+
+/* ---------- Placeholders ---------- */
+.placeholder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.6rem;
+	padding: clamp(2.5rem, 8vw, 4rem) 1.5rem;
+	text-align: center;
+}
+
+.placeholder-icon {
+	font-size: 1.6rem;
+	color: var(--text-tertiary);
+	margin-bottom: 0.3rem;
+}
+
+.placeholder-icon-warn {
+	color: var(--orange);
+}
+
+.placeholder-title {
+	margin: 0;
+	font-size: 1.05rem;
+	font-weight: 600;
+	letter-spacing: -0.02em;
+}
+
+.placeholder-copy {
+	margin: 0 0 0.5rem;
+	font-size: 0.9rem;
+	color: var(--text-secondary);
+	max-width: 26rem;
+}
+
+/* ---------- Table ---------- */
+.table-card {
+	padding: 0.4rem 0.75rem 0.75rem;
+	overflow: hidden;
+}
+
+/* Let wide tables scroll inside the card rather than the page. */
+.table-card ::ng-deep .p-datatable-table-container {
+	overflow-x: auto;
+}
+
+.table-card ::ng-deep .p-datatable-table {
+	min-width: 720px;
+}
+
+.col-clicks,
+.col-status,
+.col-expiry {
+	white-space: nowrap;
+}
+
+.col-actions {
+	text-align: right;
+	width: 1%;
+	white-space: nowrap;
+}
+
+/* Destination cell */
+.dest {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	min-width: 0;
+	max-width: 22rem;
+}
+
+.dest-favicon {
+	width: 16px;
+	height: 16px;
+	border-radius: 4px;
+	flex-shrink: 0;
+	/* A broken favicon should leave no visual gap. */
+	background: var(--bg-sunken);
+}
+
+.dest-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.dest-domain {
+	font-size: 0.92rem;
+	font-weight: 500;
+	color: var(--text-primary);
+	text-decoration: none;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.dest-domain:hover {
+	color: var(--accent);
+}
+
+.dest-path {
+	font-size: 0.76rem;
+	color: var(--text-tertiary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Short-link chip doubles as the copy button */
+.short-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	padding: 0.3rem 0.65rem;
+	border: 1px solid var(--separator);
+	border-radius: var(--radius-pill);
+	background: var(--bg-sunken);
+	color: var(--accent);
+	font-size: 0.85rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition:
+		background var(--dur-fast) var(--ease),
+		border-color var(--dur-fast) var(--ease),
+		transform var(--dur-fast) var(--ease);
+}
+
+.short-chip:hover {
+	background: var(--accent-soft);
+	border-color: var(--accent-ring);
+}
+
+.short-chip:active {
+	transform: scale(0.97);
+}
+
+.short-chip i {
+	font-size: 0.7rem;
+	opacity: 0.6;
+}
+
+.short-chip:hover i {
+	opacity: 1;
+}
+
+.clicks {
+	font-variant-numeric: tabular-nums;
+	font-weight: 600;
+	font-size: 0.95rem;
+}
+
+/* Status pill */
+.pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.25rem 0.6rem;
+	border-radius: var(--radius-pill);
+	font-size: 0.76rem;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+}
+
+.pill-dot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: currentColor;
+}
+
+.pill-active {
+	background: var(--green-soft);
+	color: var(--green);
+}
+
+.pill-paused {
+	background: var(--orange-soft);
+	color: var(--orange);
+}
+
+.pill-expired {
+	background: var(--red-soft);
+	color: var(--red);
+}
+
+.expiry {
+	font-size: 0.85rem;
+	color: var(--text-secondary);
+}
+
+.expiry-never {
+	color: var(--text-tertiary);
+}
+
+/* Row actions */
+.row-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.1rem;
+	justify-content: flex-end;
+}
+
+.row-open {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+	color: var(--text-secondary);
+	text-decoration: none;
+	font-size: 0.85rem;
+	transition:
+		background var(--dur-fast) var(--ease),
+		color var(--dur-fast) var(--ease);
+}
+
+.row-open:hover {
+	background: var(--bg-hover);
+	color: var(--accent);
+}
+
+.table-note {
+	margin: 0;
+	text-align: center;
+	font-size: 0.82rem;
+	color: var(--text-tertiary);
+}
+
+.table-note a {
+	color: var(--accent);
+	text-decoration: none;
+	margin-left: 0.35rem;
+}
+
+.table-note a:hover {
+	text-decoration: underline;
+}
+
+@media (min-width: 700px) {
+	.stats {
+		grid-template-columns: repeat(4, 1fr);
+	}
 }

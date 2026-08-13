@@ -1,0 +1,29 @@
+<p-dialog
+  header="QR code"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [dismissableMask]="true"
+  [style]="{ width: '23rem', maxWidth: '92vw' }"
+>
+  <div class="qr-body">
+    @if (svg(); as markup) {
+      <div class="qr-frame" [innerHTML]="markup"></div>
+    } @else {
+      <p class="qr-error">This link is too long to encode as a QR code.</p>
+    }
+
+    @if (caption()) {
+      <p class="qr-caption mono">{{ caption() }}</p>
+    }
+
+    <p class="qr-hint">Point a camera at the code to open the link.</p>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="qr-actions">
+      <p-button label="Copy link" icon="pi pi-link" [text]="true" (onClick)="copyLink()" />
+      <p-button label="Save SVG" icon="pi pi-download" (onClick)="downloadSvg()" />
+    </div>
+  </ng-template>
+</p-dialog>

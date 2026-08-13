@@ -3,100 +3,87 @@ import {
   Component,
   DestroyRef,
   OnInit,
-  computed,
   inject,
   signal,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { AvatarModule } from 'primeng/avatar';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID } from '@angular/core';
 import { fromEvent } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
+import { filter, map, startWith } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ThemeService } from '../services/theme-service/theme-service';
 
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink, AvatarModule, MenuModule, ButtonModule, CommonModule],
+  standalone: true,
+  imports: [RouterLink, RouterLinkActive, AvatarModule, MenuModule, ButtonModule, CommonModule],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Navbar implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private readonly platformId = inject(PLATFORM_ID);
 
-  navLinks = [
-    { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Features', href: '/' },
+  readonly theme = inject(ThemeService);
+
+  readonly navLinks = [
+    { label: 'Create', href: '/', icon: 'pi pi-plus-circle' },
+    { label: 'Links', href: '/dashboard', icon: 'pi pi-list' },
+    { label: 'Bulk', href: '/bulk', icon: 'pi pi-bolt' },
   ];
 
-  profileItems: MenuItem[] | undefined;
-  readonly isDarkMode = signal(false);
-  readonly isScrolled = signal(false);
-  readonly themeIcon = computed(() =>
-    this.isDarkMode() ? 'pi pi-sun' : 'pi pi-moon'
-  );
-  readonly themeLabel = computed(() =>
-    this.isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'
-  );
+  profileItems: MenuItem[] = [];
 
-  ngOnInit() {
+  readonly isScrolled = signal(false);
+  readonly mobileOpen = signal(false);
+
+  ngOnInit(): void {
     this.profileItems = [
+      { label: 'Profile', icon: 'pi pi-user', routerLink: '/profile' },
+      { label: 'My links', icon: 'pi pi-list', routerLink: '/dashboard' },
+      { separator: true },
       {
-        label: 'Profile',
-        icon: 'pi pi-user',
-        routerLink: '/profile',
-      },
-      {
-        label: 'Logout',
+        label: 'Sign out',
         icon: 'pi pi-sign-out',
       },
     ];
 
-    this.initializeTheme();
-    this.watchScrollState();
+    this.watchScroll();
+    this.closeMenuOnNavigate();
   }
 
-  toggleTheme() {
-    const nextMode = !this.isDarkMode();
-    this.applyTheme(nextMode);
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('theme', nextMode ? 'dark' : 'light');
-    }
+  toggleMobile(): void {
+    this.mobileOpen.update((open) => !open);
   }
 
-  private initializeTheme() {
-    if (typeof window === 'undefined') {
+  /** The floating bar gains its blur only once content slides beneath it. */
+  private watchScroll(): void {
+    if (!isPlatformBrowser(this.platformId)) {
       return;
     }
 
-    const saved = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    this.applyTheme(saved ? saved === 'dark' : prefersDark);
-  }
-
-  private applyTheme(isDark: boolean) {
-    this.isDarkMode.set(isDark);
-
-    if (typeof document !== 'undefined') {
-      document.documentElement.classList.toggle('dark', isDark);
-      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    }
-  }
-
-  private watchScrollState() {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    fromEvent(window, 'scroll')
+    fromEvent(window, 'scroll', { passive: true })
       .pipe(
-        map(() => window.scrollY > 16),
-        startWith(window.scrollY > 16),
-        takeUntilDestroyed(this.destroyRef)
+        map(() => window.scrollY > 8),
+        startWith(window.scrollY > 8),
+        takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((isScrolled) => this.isScrolled.set(isScrolled));
+      .subscribe((scrolled) => this.isScrolled.set(scrolled));
+  }
+
+  private closeMenuOnNavigate(): void {
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => this.mobileOpen.set(false));
   }
 }

@@ -1,0 +1,98 @@
+<div class="page">
+  <a class="back-link" routerLink="/dashboard">
+    <i class="pi pi-arrow-left"></i> All links
+  </a>
+
+  @if (loading()) {
+    <div class="placeholder surface-card">
+      <i class="pi pi-spin pi-spinner placeholder-icon"></i>
+      <p class="placeholder-title">Loading link…</p>
+    </div>
+  } @else if (failed() || !link()) {
+    <div class="placeholder surface-card">
+      <i class="pi pi-question-circle placeholder-icon"></i>
+      <p class="placeholder-title">We couldn't find that link</p>
+      <p class="placeholder-copy">
+        The code <span class="mono">{{ shortCode() }}</span> doesn't match any link,
+        or the server is unreachable.
+      </p>
+      <p-button label="Back to links" [outlined]="true" routerLink="/dashboard" />
+    </div>
+  } @else if (link(); as item) {
+    <header class="detail-head">
+      <span class="pill" [class]="'pill-' + item.status">
+        <span class="pill-dot" aria-hidden="true"></span>
+        {{ item.status | titlecase }}
+      </span>
+
+      <h1 class="detail-short mono">{{ item.shortUrl }}</h1>
+
+      <a class="detail-dest" [href]="item.originalUrl" target="_blank" rel="noopener noreferrer">
+        {{ item.originalUrl }}
+        <i class="pi pi-external-link"></i>
+      </a>
+
+      <div class="detail-actions">
+        <p-button label="Copy" icon="pi pi-copy" (onClick)="copyShort()" />
+        <p-button label="QR code" icon="pi pi-qrcode" [outlined]="true" (onClick)="showQr()" />
+        <a class="open-link" [href]="item.shortUrl" target="_blank" rel="noopener">
+          <i class="pi pi-external-link"></i> Open
+        </a>
+      </div>
+    </header>
+
+    <section class="metrics">
+      <article class="metric surface-card">
+        <span class="metric-label">Total clicks</span>
+        <strong class="metric-value">{{ item.clicks | number }}</strong>
+      </article>
+
+      <article class="metric surface-card">
+        <span class="metric-label">Clicks per day</span>
+        <strong class="metric-value">{{ clicksPerDay() ?? '—' }}</strong>
+      </article>
+
+      <article class="metric surface-card">
+        <span class="metric-label">Created</span>
+        <strong class="metric-value metric-value-sm">
+          {{ item.createdAt ? (item.createdAt | date: 'mediumDate') : '—' }}
+        </strong>
+      </article>
+
+      <article class="metric surface-card">
+        <span class="metric-label">Expires</span>
+        <strong class="metric-value metric-value-sm">
+          {{ item.expirationDate ? (item.expirationDate | date: 'mediumDate') : 'Never' }}
+        </strong>
+        @if (expiresIn()) {
+          <span class="metric-note">{{ expiresIn() }}</span>
+        }
+      </article>
+    </section>
+
+    <section class="info surface-card">
+      <h2 class="info-title">Details</h2>
+
+      <dl class="info-list">
+        <div class="info-row">
+          <dt>Short code</dt>
+          <dd class="mono">{{ item.shortCode }}</dd>
+        </div>
+        <div class="info-row">
+          <dt>Destination host</dt>
+          <dd>{{ item.domain }}</dd>
+        </div>
+        <div class="info-row">
+          <dt>Status</dt>
+          <dd>{{ item.status | titlecase }}</dd>
+        </div>
+        <div class="info-row">
+          <dt>Created</dt>
+          <dd>{{ item.createdAt ? (item.createdAt | date: 'medium') : 'Unknown' }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <app-qr-dialog [(visible)]="qrVisible" [url]="item.shortUrl" [caption]="item.shortUrl" />
+  }
+</div>
