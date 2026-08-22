@@ -14,31 +14,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.urlshortner.urlshortener.entity.User;
 import com.urlshortner.urlshortener.models.CustomizedResponse;
+import com.urlshortner.urlshortener.models.LoginRequest;
 import com.urlshortner.urlshortener.models.UserRequest;
 import com.urlshortner.urlshortener.repository.UserRepository;
 
+import jakarta.validation.Valid;
+
 @RestController
+@CrossOrigin(origins = "*", maxAge = 3600)
+@RequestMapping("/api/auth")
 public class UserController {
-    @CrossOrigin(origins = "*",maxAge = 3600)
-    @RequestMapping("/api/users")
-
-    @Autowired
-    private UserRepository userRepository;
-
     @PostMapping("/login")
-    public ResponseEntity<CustomizedResponse> login(@RequestBody UserRequest userRequest){
-        try {
-            String userName=userRequest.getEmail();
-            Optional<User> u=userRepository.findByUserName(userName);
-            if(u.isEmpty()){
-                return new CustomizedResponse().internalServerError().body("Invalid Login");
-            }
-            else{
-                return new ResponseEntity<>("Successs");
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>(500);
-        }
+    public ResponseEntity<CustomizedResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
+        return ResponseEntity.ok(new CustomizedResponse(false, null));
     }
 
 }
